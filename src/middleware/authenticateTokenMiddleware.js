@@ -11,7 +11,7 @@ export const authenticateToken = (req, res, next) => {
   }
 
   try {
-    const data = jwt.verify(token, process.env.TOKEN_SECRET);
+    const data = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
     req.session.user = data;
     next();
   } catch (error) {

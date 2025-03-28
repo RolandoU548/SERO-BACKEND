@@ -16,9 +16,9 @@ const login = async (req, res, next) => {
       return res.status(401).json({ message: "Contraseña incorrecta" });
     }
 
-    const token = jwt.sign(
+    const accessToken = jwt.sign(
       { id: user._id, email: user.email },
-      process.env.TOKEN_SECRET,
+      process.env.ACCESS_TOKEN_SECRET,
       {
         expiresIn: "15m",
       }
@@ -28,11 +28,18 @@ const login = async (req, res, next) => {
       { id: user._id, email: user.email },
       process.env.REFRESH_TOKEN_SECRET,
       {
-        expiresIn: "15d",
+        expiresIn: "7d",
       }
     );
 
-    const { password: _, ...userWithoutPassword } = user.toObject();
+    user.refreshToken = refreshToken;
+    await user.save();
+
+    const {
+      password: _,
+      refreshToken: __,
+      ...userWithoutPasswordAndToken
+    } = user.toObject();
 
     res
       .cookie("refresh_token", refreshToken, {
@@ -43,8 +50,8 @@ const login = async (req, res, next) => {
       })
       .status(200)
       .json({
-        user: userWithoutPassword,
-        token,
+        user: userWithoutPasswordAndToken,
+        accessToken,
         message: "Inicio de sesión exitoso",
       });
   } catch (error) {

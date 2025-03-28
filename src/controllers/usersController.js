@@ -21,8 +21,12 @@ const createUser = async (req, res, next) => {
     const user = new User(req.body);
     const savedUser = await user.save();
 
-    const { password: _, ...userWithoutPassword } = savedUser.toObject();
-    res.status(201).json(userWithoutPassword);
+    const {
+      password: _,
+      refreshToken: __,
+      ...userWithoutPasswordAndToken
+    } = savedUser.toObject();
+    res.status(201).json(userWithoutPasswordAndToken);
   } catch (error) {
     if (error.name === "ValidationError") {
       return res
@@ -35,7 +39,9 @@ const createUser = async (req, res, next) => {
 
 const getUserById = async (req, res, next) => {
   try {
-    const user = await User.findById(req.params.id);
+    const user = await User.findById(req.params.id).select(
+      "-password -refreshToken"
+    );
     if (!user) {
       return res.status(404).json({ message: "User no encontrado" });
     }
@@ -47,7 +53,7 @@ const getUserById = async (req, res, next) => {
 
 const getAllUsers = async (req, res, next) => {
   try {
-    const users = await User.find();
+    const users = await User.find().select("-password -refreshToken");
     res.status(200).json(users);
   } catch (error) {
     next(error);
@@ -56,6 +62,12 @@ const getAllUsers = async (req, res, next) => {
 
 const updateUserById = async (req, res, next) => {
   try {
+    const existingUser = await User.findOne({ email: req.body.email });
+
+    if (existingUser && existingUser._id.toString() !== req.params.id) {
+      return res.status(400).json({ message: "El email ya está en uso" });
+    }
+
     const updatedUser = await User.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
       runValidators: true,
@@ -63,7 +75,13 @@ const updateUserById = async (req, res, next) => {
     if (!updatedUser) {
       return res.status(404).json({ message: "User no encontrado" });
     }
-    res.status(200).json(updatedUser);
+
+    const {
+      password: _,
+      refreshToken: __,
+      ...userWithoutPasswordAndToken
+    } = updatedUser.toObject();
+    res.status(200).json(userWithoutPasswordAndToken);
   } catch (error) {
     next(error);
   }

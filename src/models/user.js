@@ -16,6 +16,7 @@ const userSchema = new Schema({
   phone: Number,
   address: String,
   birthday: Date,
+  refreshToken: String,
 });
 
 const User = model("User", userSchema);
