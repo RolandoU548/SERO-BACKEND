@@ -2,7 +2,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import User from "../models/user.js";
 
-const login = async (req, res) => {
+const login = async (req, res, next) => {
   const { email, password } = req.body;
 
   try {
@@ -32,17 +32,7 @@ const login = async (req, res) => {
       }
     );
 
-    const publicUser = {
-      name: user.name,
-      lastname: user.lastname,
-      email: user.email,
-      createdAt: user.createdAt,
-      role: user.role,
-      status: user.status,
-      phone: user.phone,
-      address: user.address,
-      birthday: user.birthday,
-    };
+    const { password: _, ...userWithoutPassword } = user.toObject();
 
     res
       .cookie("refresh_token", refreshToken, {
@@ -53,12 +43,12 @@ const login = async (req, res) => {
       })
       .status(200)
       .json({
-        user: publicUser,
+        user: userWithoutPassword,
         token,
         message: "Inicio de sesión exitoso",
       });
   } catch (error) {
-    res.status(500).json({ message: "Error en el servidor", error });
+    next(error);
   }
 };
 
