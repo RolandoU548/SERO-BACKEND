@@ -5,14 +5,16 @@ import mongoose from "mongoose";
 import bodyParser from "body-parser";
 import cookieParser from "cookie-parser";
 
+import authenticationRoutes from "./routes/authenticationRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import clientRoutes from "./routes/clientRoutes.js";
 import taskRoutes from "./routes/taskRoutes.js";
+import { errorHandler } from "./middleware/errorHandlerMiddleware.js";
 
 dotenv.config();
+
 const DB_HOST = process.env.DB_HOST;
 if (!DB_HOST) throw new Error("DB_HOST must be defined");
-
 mongoose
   .connect(DB_HOST)
   .then(() => console.log("Conectado a MongoDB con Mongoose"))
@@ -33,8 +35,10 @@ app.use(
 app.use(express.json());
 app.use(bodyParser.json());
 app.use(cookieParser());
+app.use(errorHandler);
 
 // Registrar rutas
+app.use("/auth", authenticationRoutes);
 app.use("/users", userRoutes);
 app.use("/clients", clientRoutes);
 app.use("/tasks", taskRoutes);
