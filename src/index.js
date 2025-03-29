@@ -9,6 +9,7 @@ import authenticationRoutes from "./routes/authenticationRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import clientRoutes from "./routes/clientRoutes.js";
 import taskRoutes from "./routes/taskRoutes.js";
+import { authenticateToken } from "./middleware/authenticateTokenMiddleware.js";
 import { errorHandler } from "./middleware/errorHandlerMiddleware.js";
 
 dotenv.config();
@@ -40,6 +41,9 @@ app.use(errorHandler);
 // Registrar rutas
 app.use("/auth", authenticationRoutes);
 app.use("/users", userRoutes);
+
+//Rutas protegidas por authenticateToken
+app.use(authenticateToken);
 app.use("/clients", clientRoutes);
 app.use("/tasks", taskRoutes);
 

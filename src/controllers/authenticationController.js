@@ -46,7 +46,7 @@ const login = async (req, res, next) => {
         httpOnly: true,
         secure: true,
         sameSite: "None",
-        maxAge: 1000 * 60 * 60 * 24 * 15,
+        maxAge: 1000 * 60 * 60 * 24 * 7,
       })
       .status(200)
       .json({
@@ -60,10 +60,56 @@ const login = async (req, res, next) => {
 };
 
 const logout = async (req, res) => {
-  res
-    .clearCookie("refresh_token")
-    .status(200)
-    .json({ message: "Sesión cerrada exitosamente" });
+  const cookies = req.cookies;
+  if (!cookies?.refresh_token) return res.sendStatus(204);
+
+  const refreshToken = cookies.refresh_token;
+
+  try {
+    const foundUser = await User.findOne({ refreshToken });
+    if (!foundUser) {
+      return res.clearCookie("refresh_token").sendStatus(204);
+    }
+    delete foundUser.refreshToken;
+    await foundUser.save();
+    return res
+      .clearCookie("refresh_token")
+      .status(200)
+      .json({ message: "Sesión cerrada exitosamente" });
+  } catch {}
 };
 
-export { login, logout };
+const refreshToken = async (req, res) => {
+  const cookies = req.cookies;
+  if (!cookies?.refresh_token) return res.sendStatus(401);
+  const refreshToken = cookies.refresh_token;
+
+  try {
+    const foundUser = await User.findOne({ refreshToken });
+    if (!foundUser) {
+      return res.status(401).json({ message: "User not found" });
+    }
+
+    const decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
+    if (foundUser._id.toString() !== decoded.id) {
+      return res
+        .status(403)
+        .json({ message: "Token is not valid for this user" });
+    }
+
+    const accessToken = jwt.sign(
+      { id: foundUser._id, email: foundUser.email },
+      process.env.ACCESS_TOKEN_SECRET,
+      { expiresIn: "15m" }
+    );
+    return res.status(200).json({ accessToken });
+  } catch (error) {
+    if (error.name === "JsonWebTokenError")
+      return res.status(403).json({ message: "Token inválido" });
+    if (error.name === "TokenExpiredError")
+      return res.status(403).json({ message: "Token expirado" });
+    next(error);
+  }
+};
+
+export { login, logout, refreshToken };

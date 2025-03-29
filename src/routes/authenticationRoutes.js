@@ -1,12 +1,15 @@
 import express from "express";
-import { authenticateToken } from "../middleware/authenticateTokenMiddleware.js";
-import { login, logout } from "../controllers/authenticationController.js";
+import {
+  login,
+  logout,
+  refreshToken,
+} from "../controllers/authenticationController.js";
 
 const router = express.Router();
 
 router.post("/login", login);
 
-router.use(authenticateToken);
+router.get("/refreshToken", refreshToken);
 
 router.post("/logout", logout);
 
