@@ -18,7 +18,7 @@ const DB_HOST = process.env.DB_HOST;
 if (!DB_HOST) throw new Error("DB_HOST must be defined");
 mongoose
   .connect(DB_HOST)
-  .then(() => console.log("Conectado a MongoDB con Mongoose"))
+  .then(() => console.log("Connected to MongoDB with Mongoose"))
   .catch((err) => {
     console.error(err);
     throw new Error("Connection database failed");
@@ -34,6 +34,7 @@ app.use(
   })
 );
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(cookieParser());
 app.use(errorHandler);
@@ -48,5 +49,5 @@ app.use("/clients", clientRoutes);
 app.use("/tasks", taskRoutes);
 
 app.listen(PORT, () => {
-  console.log(`Servidor ejecutándose en http://localhost:${PORT}`);
+  console.log(`Server listening on http://localhost:${PORT}`);
 });

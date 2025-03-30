@@ -2,14 +2,14 @@ import express from "express";
 import {
   login,
   logout,
-  refreshToken,
+  refreshAccessToken,
 } from "../controllers/authenticationController.js";
 
 const router = express.Router();
 
 router.post("/login", login);
 
-router.get("/refreshToken", refreshToken);
+router.post("/refreshAccessToken", refreshAccessToken);
 
 router.post("/logout", logout);
 

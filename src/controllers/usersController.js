@@ -6,7 +6,7 @@ const createUser = async (req, res, next) => {
     const { name, lastname, email, password, role } = req.body;
     if (!name || !lastname || !email || !password || !role) {
       return res.status(400).json({
-        message: "Todos los campos requeridos deben ser proporcionados",
+        message: "All required fields must be provided",
       });
     }
 
@@ -14,7 +14,7 @@ const createUser = async (req, res, next) => {
     if (existingUser) {
       return res
         .status(409)
-        .json({ message: "El correo electrónico ya está registrado" });
+        .json({ message: "Email already exists" });
     }
 
     req.body.password = await bcrypt.hash(password, 10);
@@ -26,12 +26,13 @@ const createUser = async (req, res, next) => {
       refreshToken: __,
       ...userWithoutPasswordAndToken
     } = savedUser.toObject();
-    res.status(201).json(userWithoutPasswordAndToken);
+
+    res.status(201).json({user:userWithoutPasswordAndToken, message:"A user has been created"});
   } catch (error) {
     if (error.name === "ValidationError") {
       return res
         .status(400)
-        .json({ message: "Error de validación", errors: error.errors });
+        .json({ message: "Validation error", errors: error.errors });
     }
     next(error);
   }
@@ -43,7 +44,7 @@ const getUserById = async (req, res, next) => {
       "-password -refreshToken"
     );
     if (!user) {
-      return res.status(404).json({ message: "User no encontrado" });
+      return res.status(404).json({ message: "User not found" });
     }
     res.status(200).json(user);
   } catch (error) {
@@ -65,7 +66,7 @@ const updateUserById = async (req, res, next) => {
     const existingUser = await User.findOne({ email: req.body.email });
 
     if (existingUser && existingUser._id.toString() !== req.params.id) {
-      return res.status(400).json({ message: "El email ya está en uso" });
+      return res.status(400).json({ message: "Email already exists" });
     }
 
     const updatedUser = await User.findByIdAndUpdate(req.params.id, req.body, {
@@ -73,7 +74,7 @@ const updateUserById = async (req, res, next) => {
       runValidators: true,
     });
     if (!updatedUser) {
-      return res.status(404).json({ message: "User no encontrado" });
+      return res.status(404).json({ message: "User not found" });
     }
 
     const {
@@ -91,9 +92,9 @@ const deleteUserById = async (req, res, next) => {
   try {
     const deletedUser = await User.findByIdAndDelete(req.params.id);
     if (!deletedUser) {
-      return res.status(404).json({ message: "User no encontrado" });
+      return res.status(404).json({ message: "User not found" });
     }
-    res.status(200).json({ message: "User eliminado correctamente" });
+    res.status(200).json({ message: "User deleted succesfully" });
   } catch (error) {
     next(error);
   }
