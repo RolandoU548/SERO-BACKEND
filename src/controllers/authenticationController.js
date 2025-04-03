@@ -17,7 +17,7 @@ const login = async (req, res, next) => {
     }
 
     const accessToken = jwt.sign(
-      { id: user._id, email: user.email },
+      { _id: user._id, email: user.email, role: user.role },
       process.env.ACCESS_TOKEN_SECRET,
       {
         expiresIn: "15m",
@@ -97,7 +97,7 @@ const refreshAccessToken = async (req, res) => {
     }
 
     const accessToken = jwt.sign(
-      { id: foundUser._id, email: foundUser.email },
+      { _id: foundUser._id, email: foundUser.email, role: foundUser.role },
       process.env.ACCESS_TOKEN_SECRET,
       { expiresIn: "15m" }
     );
@@ -107,7 +107,9 @@ const refreshAccessToken = async (req, res) => {
       ...userWithoutPasswordAndToken
     } = foundUser.toObject();
 
-    return res.status(200).json({ user:userWithoutPasswordAndToken, accessToken });
+    return res
+      .status(200)
+      .json({ user: userWithoutPasswordAndToken, accessToken });
   } catch (error) {
     if (error.name === "JsonWebTokenError")
       return res.status(403).json({ message: "Invalid token" });
