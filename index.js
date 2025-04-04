@@ -5,14 +5,14 @@ import mongoose from "mongoose";
 import bodyParser from "body-parser";
 import cookieParser from "cookie-parser";
 
-import authenticationRoutes from "./routes/authenticationRoutes.js";
-import userRoutes from "./routes/userRoutes.js";
-import clientRoutes from "./routes/clientRoutes.js";
-import taskRoutes from "./routes/taskRoutes.js";
-import spreadsheetRoutes from "./routes/spreadsheetRoutes.js";
+import authenticationRoutes from "./src/routes/authenticationRoutes.js";
+import userRoutes from "./src/routes/userRoutes.js";
+import clientRoutes from "./src/routes/clientRoutes.js";
+import taskRoutes from "./src/routes/taskRoutes.js";
+import spreadsheetRoutes from "./src/routes/spreadsheetRoutes.js";
 
-import { authenticateToken } from "./middleware/authenticateTokenMiddleware.js";
-import { errorHandler } from "./middleware/errorHandlerMiddleware.js";
+import { authenticateToken } from "./src/middleware/authenticateTokenMiddleware.js";
+import { errorHandler } from "./src/middleware/errorHandlerMiddleware.js";
 
 dotenv.config();
 
