@@ -16,11 +16,18 @@ import { errorHandler } from "./middleware/errorHandlerMiddleware.js";
 
 dotenv.config();
 
-const DB_HOST = process.env.DB_HOST;
-if (!DB_HOST) throw new Error("DB_HOST must be defined");
+const DB_URI = process.env.DB_URI;
+if (!DB_URI) throw new Error("DB_URI must be defined");
+
+const clientOptions = {
+  serverApi: { version: "1", strict: true, deprecationErrors: true },
+};
+
 mongoose
-  .connect(DB_HOST)
-  .then(() => console.log("Connected to MongoDB with Mongoose"))
+  .connect(DB_URI, clientOptions)
+  .then((db) =>
+    console.log("Connected to MongoDB with Mongoose to", db.connection.host)
+  )
   .catch((err) => {
     console.error(err);
     throw new Error("Connection database failed");
