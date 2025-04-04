@@ -25,7 +25,7 @@ const login = async (req, res, next) => {
     );
 
     const refreshToken = jwt.sign(
-      { id: user._id, email: user.email },
+      { _id: user._id, email: user.email },
       process.env.REFRESH_TOKEN_SECRET,
       {
         expiresIn: "7d",
@@ -52,7 +52,7 @@ const login = async (req, res, next) => {
       .json({
         user: userWithoutPasswordAndToken,
         accessToken,
-        message: "Logged in succesfully",
+        message: "Logged in successfully",
       });
   } catch (error) {
     next(error);
@@ -68,30 +68,59 @@ const logout = async (req, res) => {
   try {
     const foundUser = await User.findOne({ refreshToken });
     if (!foundUser) {
-      return res.clearCookie("refresh_token").sendStatus(204);
+      return res
+        .clearCookie("refresh_token", {
+          httpOnly: true,
+          secure: true,
+          sameSite: "None",
+        })
+        .status(204)
+        .json({ message: "Cookie cleared successfully" });
     }
-    delete foundUser.refreshToken;
+    foundUser.refreshToken = undefined;
     await foundUser.save();
     return res
-      .clearCookie("refresh_token")
+      .clearCookie("refresh_token", {
+        httpOnly: true,
+        secure: true,
+        sameSite: "None",
+      })
       .status(200)
-      .json({ message: "Logged out succesfully" });
-  } catch {}
+      .json({ message: "Logged out successfully" });
+  } catch (error) {
+    next(error);
+  }
 };
 
 const refreshAccessToken = async (req, res) => {
   const cookies = req.cookies;
-  if (!cookies?.refresh_token) return res.sendStatus(401);
+
+  if (!cookies?.refresh_token)
+    return res.status(401).json({ message: "Refresh Token is needed" });
+
   const refreshToken = cookies.refresh_token;
+
   try {
     const foundUser = await User.findOne({ refreshToken });
     if (!foundUser) {
-      return res.status(401).json({ message: "User not found" });
+      return res
+        .clearCookie("refresh_token", {
+          httpOnly: true,
+          secure: true,
+          sameSite: "None",
+        })
+        .status(401)
+        .json({ message: "User not found" });
     }
 
     const decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
-    if (foundUser._id.toString() !== decoded.id) {
+    if (foundUser._id.toString() !== decoded._id) {
       return res
+        .clearCookie("refresh_token", {
+          httpOnly: true,
+          secure: true,
+          sameSite: "None",
+        })
         .status(403)
         .json({ message: "Token is not valid for this user" });
     }
