@@ -90,7 +90,7 @@ export const getAllUsers = async (req, res, next) => {
 
 export const updateUserById = async (req, res, next) => {
   try {
-    const { _id, email, password, role, ...updateData } = req.body;
+    const { _id, email, password, ...updateData } = req.body;
     if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
       return res.status(400).json({ message: "Invalid user ID format" });
     }
