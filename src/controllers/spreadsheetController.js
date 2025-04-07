@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import Spreadsheet from "../models/spreadsheet.js";
 
 export const createSpreadsheet = async (req, res) => {
@@ -57,6 +58,9 @@ export const getSpreadsheetById = async (req, res) => {
     if (!id) {
       return res.status(400).json({ message: "Spreadsheet ID is required" });
     }
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: "Invalid user ID format" });
+    }
     const spreadsheet = await Spreadsheet.findById(id);
     if (!spreadsheet) {
       return res.status(404).json({ message: "Spreadsheet not found" });
@@ -74,6 +78,9 @@ export const updateSpreadsheetById = async (req, res) => {
     const { id } = req.params;
     if (!id) {
       return res.status(400).json({ message: "Spreadsheet ID is required" });
+    }
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: "Invalid user ID format" });
     }
     if (!req.body || Object.keys(req.body).length === 0) {
       return res.status(400).json({ message: "Update data is required" });
@@ -104,6 +111,9 @@ export const deleteSpreadsheetById = async (req, res) => {
     if (!id) {
       return res.status(400).json({ message: "Spreadsheet ID is required" });
     }
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: "Invalid user ID format" });
+    }
     const deletedSpreadsheet = await Spreadsheet.findByIdAndDelete(id);
     if (!deletedSpreadsheet) {
       return res.status(404).json({ message: "Spreadsheet not found" });
@@ -119,6 +129,9 @@ export const getSpreadsheetByUserId = async (req, res) => {
     const { userId } = req.params;
     if (!userId) {
       return res.status(400).json({ message: "User ID is required" });
+    }
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      return res.status(400).json({ message: "Invalid user ID format" });
     }
     const spreadsheet = await Spreadsheet.findOne({ user: userId });
     if (!spreadsheet) {

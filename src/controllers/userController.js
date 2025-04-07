@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
 import User from "../models/user.js";
 
@@ -41,6 +42,9 @@ export const createUser = async (req, res, next) => {
 
 export const getUserById = async (req, res, next) => {
   try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(400).json({ message: "Invalid user ID format" });
+    }
     const user = await User.findById(req.params.id).select(
       "-password -refreshToken"
     );
@@ -86,8 +90,10 @@ export const getAllUsers = async (req, res, next) => {
 
 export const updateUserById = async (req, res, next) => {
   try {
-    const { _id, email, password, role, ...updateData } = req.body; // Exclude _id, email, password and role from updates
-
+    const { _id, email, password, role, ...updateData } = req.body;
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(400).json({ message: "Invalid user ID format" });
+    }
     const updatedUser = await User.findByIdAndUpdate(
       req.params.id,
       updateData,
@@ -107,7 +113,10 @@ export const updateUserById = async (req, res, next) => {
       ...userWithoutPasswordAndToken
     } = updatedUser.toObject();
 
-    res.status(200).json(userWithoutPasswordAndToken);
+    res.status(200).json({
+      user: userWithoutPasswordAndToken,
+      message: "A user has been updated",
+    });
   } catch (error) {
     next(error);
   }
@@ -115,6 +124,9 @@ export const updateUserById = async (req, res, next) => {
 
 export const deleteUserById = async (req, res, next) => {
   try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(400).json({ message: "Invalid user ID format" });
+    }
     const deletedUser = await User.findByIdAndDelete(req.params.id);
     if (!deletedUser) {
       return res.status(404).json({ message: "User not found" });
@@ -208,32 +220,6 @@ export const changePassword = async (req, res, next) => {
     await user.save();
 
     res.status(200).json({ message: "Password changed successfully" });
-  } catch (error) {
-    next(error);
-  }
-};
-
-export const updateUserRoleById = async (req, res, next) => {
-  try {
-    const { role } = req.body;
-
-    if (!role) {
-      return res.status(400).json({ message: "Role is required" });
-    }
-
-    const updatedUser = await User.findByIdAndUpdate(
-      req.params.id,
-      { role },
-      { new: true, runValidators: true }
-    );
-
-    if (!updatedUser) {
-      return res.status(404).json({ message: "User not found" });
-    }
-
-    res
-      .status(200)
-      .json({ message: "Role updated successfully", user: updatedUser });
   } catch (error) {
     next(error);
   }

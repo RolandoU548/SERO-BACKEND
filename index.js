@@ -46,7 +46,6 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(cookieParser());
-app.use(errorHandler);
 
 // Registrar rutas
 app.use("/auth", authenticationRoutes);
@@ -57,6 +56,9 @@ app.use(authenticateToken);
 app.use("/clients", clientRoutes);
 app.use("/tasks", taskRoutes);
 app.use("/spreadsheets", spreadsheetRoutes);
+
+// Error Middleware
+app.use(errorHandler);
 
 app.listen(PORT, () => {
   console.log(`Server listening on http://localhost:${PORT}`);

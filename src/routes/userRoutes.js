@@ -12,7 +12,6 @@ import {
   getOwnUser,
   deleteOwnUser,
   changePassword,
-  updateUserRoleById,
 } from "../controllers/userController.js";
 
 const router = express.Router();
@@ -34,8 +33,6 @@ router.get("/", getAllUsers);
 router.get("/:id", getUserById);
 
 router.put("/:id", updateUserById);
-
-router.put("/updateRole/:id", updateUserRoleById);
 
 router.delete("/:id", deleteUserById);
 
